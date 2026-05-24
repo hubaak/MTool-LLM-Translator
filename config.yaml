@@ -1,0 +1,10 @@
+LLM_Backend: openai
+
+OpenAI_api:
+  url: https://api.openai.com/v1
+  key: 
+  model:
+
+  inference:
+    max_tokens: 2048
+    temperature: 0.2
