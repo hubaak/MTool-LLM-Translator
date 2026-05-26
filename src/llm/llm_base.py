@@ -25,9 +25,7 @@ class LLM_Base:
         match_results = {}
         for key_word in key_words:
             escaped = re.escape(key_word)
-            pattern = rf"<{escaped}>([\s\S]*?)</{escaped}>"
+            pattern = rf"<{escaped}>([^<]*?)</{escaped}>"
             matches = re.findall(pattern, response)
             match_results[key_word] = [item.strip() for item in matches] if matches else None
         return match_results
-    
-    
