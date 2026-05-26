@@ -3,3 +3,7 @@ pyyaml
 openai
 pyahocorasick
 ahocorasick
+fastapi
+uvicorn
+asyncio
+logging
