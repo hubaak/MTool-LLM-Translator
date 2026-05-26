@@ -7,7 +7,7 @@ def get_args():
     
     parser.add_argument("--input", type=str, default="ManualTransFile.json", help="a json file exported from MTool")
     parser.add_argument("--output", type=str, default="Translation.json")
-    parser.add_argument("--mute_tqdm", action="store_false")
+    parser.add_argument("--mute_tqdm", action="store_true")
     
     return parser.parse_args()
 
