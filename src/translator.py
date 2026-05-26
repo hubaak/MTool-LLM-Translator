@@ -6,23 +6,33 @@ from .llm import get_llm_backend
 from .noun_manager import NounManager
 from .source_filter import SourceFilter
 from .context_manager import ContextManager
-from .env import LLM_BACKEND, SYS_PROMPT_TRANSLATOR_ZH, PROMPT_TRANSLATOR_ZH
+from .env import LLM_BACKEND, read_prompts
 
 class Translator:
-    def __init__(self, source_file : str, target_file : str):
+    def __init__(self, source_file : str = None, target_file : str  = None):
         self.llm = get_llm_backend(LLM_BACKEND)
         self.noun_manager = NounManager()
         self.source_filter = SourceFilter()
         self.context_manager = ContextManager(max_size=5)
         self.max_attempts = 3
-        self.load_source_from_json(source_file)
-        self.load_target_from_json(target_file)
-        self.target_file = target_file
-        self.set_prompts()
+        
+        if source_file:
+            self.load_source_from_json(source_file)
+        if target_file:
+            self.load_target_from_json(target_file)
+            self.target_file = target_file
+            
+        self.source_lang = "ja"
+        self.target_lang = "zh"
+        self.set_prompts(self.source_lang, self.target_lang)
     
-    def set_prompts(self):
-        self.sys_prompt_translator = SYS_PROMPT_TRANSLATOR_ZH
-        self.prompt_translator = PROMPT_TRANSLATOR_ZH
+    def set_prompts(
+            self,
+            source_lang : str,
+            target_lang : str
+        ):
+        self.sys_prompt_translator, self.prompt_translator = read_prompts(source_lang, target_lang)
+
         
     def translate_all(self, use_tqdm=True):
         iterator = tqdm(self.source_list, desc="Translating") if use_tqdm else self.source_list
@@ -71,6 +81,20 @@ class Translator:
                 return results
         return {}
     
+    def translate(
+        self,
+        text : str,
+        source_lang : str = "jp",
+        target_lang : str = "zh"
+    ):
+        if self.source_lang != source_lang or self.target_lang != target_lang:
+            self.set_prompts(source_lang, target_lang)
+        results = self.translate_single(text)
+        if results:
+            return results["translation"][-1] if isinstance(results["translation"], list) else results["translation"]
+        else:
+            raise RuntimeError("Translate faild after {} attemps!".format(self.max_attempts))
+            
     def check_translation(self, results):
         if results.get("translation") is None:
             return False

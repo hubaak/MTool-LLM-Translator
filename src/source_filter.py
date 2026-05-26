@@ -18,6 +18,7 @@ class SourceFilter:
             ("shortcut", self.shortcut_filter),
             ("emoji", self.emoji_filter),
             ("code", self.code_filter),
+            ("file", self.file_filter)
         ]
 
     def filter(self, text: str):
@@ -126,3 +127,9 @@ class SourceFilter:
             return True
 
         return False
+    
+    def file_filter(self, text: str):
+        file_endswitch = [".txt", ".md", ".rst", ".log", ".ini", ".cfg", ".conf", ".toml", ".yaml", ".yml", ".json", ".json5", ".xml", ".csv", ".tsv", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".pdf", ".rtf", ".odt", ".ods", ".odp", ".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz", ".tgz", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".ico", ".tif", ".tiff", ".heic", ".avif", ".mp3", ".wav", ".flac", ".aac", ".ogg", ".m4a", ".wma", ".mid", ".midi", ".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm", ".mpeg", ".mpg", ".ts", ".py", ".pyw", ".ipynb", ".c", ".cpp", ".cc", ".cxx", ".h", ".hpp", ".java", ".kt", ".go", ".rs", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".php", ".rb", ".pl", ".lua", ".swift", ".dart", ".scala", ".r", ".m", ".html", ".htm", ".css", ".scss", ".sass", ".less", ".vue", ".sh", ".bash", ".zsh", ".fish", ".bat", ".cmd", ".ps1", ".db", ".sqlite", ".sqlite3", ".sql", ".parquet", ".h5", ".hdf5", ".pkl", ".exe", ".msi", ".apk", ".ipa", ".appimage", ".deb", ".rpm", ".dll", ".so", ".dylib", ".unity", ".uasset", ".pak", ".rpgmvp", ".rpgmvo", ".rpgmvm", ".xp3", ".ttf", ".otf", ".woff", ".woff2", ".torrent", ".iso", ".img", ".bin", ".dat", ".bak", ".tmp", ".fbx"]
+        text = text.lower().strip()
+
+        return any(text.endswith(ext) for ext in file_endswitch)

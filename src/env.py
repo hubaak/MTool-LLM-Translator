@@ -14,7 +14,15 @@ LLM_BACKEND = CONFIG.get("LLM_Backend", "openai")
 OPENAI_KEY = os.getenv("MTool_LLMT_OpenAI_KEY", "")
 
 
-with open(os.path.join(SRC_DIR_PATH_PATH, "prompts", "sys_prompt_translator_zh.txt"), "r", encoding="utf-8") as f:
-    SYS_PROMPT_TRANSLATOR_ZH = f.read()
-with open(os.path.join(SRC_DIR_PATH_PATH, "prompts", "prompt_translator_zh.txt"), "r", encoding="utf-8") as f:
-    PROMPT_TRANSLATOR_ZH = f.read()
+def read_prompts(source_lang : str, target_lang : str):
+    sys_prompt_path = os.path.join(SRC_DIR_PATH_PATH, "prompts", "sys_prompt_translator_{}_{}.txt".format(source_lang, target_lang))
+    prompt_path = os.path.join(SRC_DIR_PATH_PATH, "prompts", "prompt_translator_{}_{}.txt".format(source_lang, target_lang))
+    if not os.path.exists(sys_prompt_path) or not os.path.exists(prompt_path):
+        raise ValueError("{} -> {} translation prompt is not configured! Configure it in src/prompts/prompt_tranlator_{}_{}.txt and src/prompts/sys_prompt_tranlator_{}_{}.txt".format(source_lang, target_lang, source_lang, target_lang))
+
+    with open(sys_prompt_path, "r", encoding="utf-8") as f:
+        SYS_PROMPT_TRANSLATOR = f.read()
+    with open(prompt_path, "r", encoding="utf-8") as f:
+        PROMPT_TRANSLATOR = f.read()
+
+    return SYS_PROMPT_TRANSLATOR, PROMPT_TRANSLATOR

@@ -15,6 +15,7 @@ class LLM_Base:
     ) -> Dict[str, Optional[List[str]]]:
         response = self.get_response(sys_prompt, prompt, **kwargs)
         results = LLM_Base.extract_result_from_response(response, key_words)
+        results["->-<-llm_response->-<-"] = response
         return results
     
     @staticmethod
@@ -25,7 +26,7 @@ class LLM_Base:
         match_results = {}
         for key_word in key_words:
             escaped = re.escape(key_word)
-            pattern = rf"<{escaped}>([^<]*?)</{escaped}>"
+            pattern = rf"<{escaped}>([\s\S]*?)</{escaped}>"
             matches = re.findall(pattern, response)
             match_results[key_word] = [item.strip() for item in matches] if matches else None
         return match_results
