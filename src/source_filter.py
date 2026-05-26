@@ -2,7 +2,7 @@ import re
 from typing import Callable, List, Tuple
 
 
-class Source_Filter:
+class SourceFilter:
     def __init__(self):
         self.registered_filters: List[Tuple[str, Callable[[str], bool]]] = [
             ("empty", self.empty_filter),

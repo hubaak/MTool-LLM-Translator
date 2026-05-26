@@ -4,14 +4,16 @@ from tqdm import tqdm
 
 from .llm import get_llm_backend
 from .noun_manager import NounManager
-from .source_filter import Source_Filter
+from .source_filter import SourceFilter
+from .context_manager import ContextManager
 from .env import LLM_BACKEND, SYS_PROMPT_TRANSLATOR_ZH, PROMPT_TRANSLATOR_ZH
 
 class Translator:
     def __init__(self, source_file : str, target_file : str):
         self.llm = get_llm_backend(LLM_BACKEND)
         self.noun_manager = NounManager()
-        self.source_filter = Source_Filter()
+        self.source_filter = SourceFilter()
+        self.context_manager = ContextManager(max_size=5)
         self.max_attempts = 3
         self.load_source_from_json(source_file)
         self.load_target_from_json(target_file)
@@ -29,10 +31,10 @@ class Translator:
             if source_text in self.target_json:
                 continue
 
-            result = self.translate_single(source_text)
+            results = self.translate_single(source_text)
 
-            if result and result.get("translation"):
-                self.target_json[source_text] = result["translation"][-1] if isinstance(result["translation"], list) else result["translation"]
+            if results and results.get("translation"):
+                self.target_json[source_text] = results["translation"][-1] if isinstance(results["translation"], list) else results["translation"]
                 self.save_target_to_json()
 
         return self.target_json
@@ -54,13 +56,18 @@ class Translator:
             }
         for attempt_count in range(self.max_attempts):
             noun_list = self.noun_manager.get_noun_list(source_text)
+            context_source_text, context_translation_text = self.context_manager.get_context_formatted()
             results = self.llm.get_result(
                 sys_prompt = self.sys_prompt_translator,
-                prompt = self.prompt_translator.format(source_text=source_text, noun_list=noun_list),
+                prompt = self.prompt_translator.format(source_text=source_text, noun_list=noun_list, context_source_text=context_source_text, context_translation_text=context_translation_text),
                 key_words = ["translation", "noun"]
             )
             if self.check_translation(results = results):
                 self.register_nouns(results)
+                self.context_manager.add(
+                    source_text = source_text.strip(),
+                    translation= results["translation"][-1] if isinstance(results["translation"], list) else results["translation"]
+                )
                 return results
         return {}
     
