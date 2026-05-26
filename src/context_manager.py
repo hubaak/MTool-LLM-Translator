@@ -1,5 +1,5 @@
 from collections import deque
-from typing import List, Tuple, Optional
+from typing import Dict, Tuple, Optional, Any
 
 
 class ContextManager:
@@ -37,3 +37,20 @@ class ContextManager:
 
     def size(self) -> int:
         return len(self.context_queue)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "context_queue": [
+                {
+                    "source_text": src,
+                    "translation": trans
+                }
+                for src, trans in self.context_queue
+            ]
+        }
+        
+    def load_dict(self, data: Dict[str, Any]) -> None:
+        self.context_queue = deque(
+            data.get("context_queue", []),
+            maxlen=self.max_size
+        )

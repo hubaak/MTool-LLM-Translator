@@ -51,11 +51,13 @@ class Translator:
 
     def save_target_to_json(self):
         noun_list = self.noun_manager.save_to_list()
+        context_dict = self.context_manager.to_dict()
         output_data = {}
         for key, value in self.target_json.items():
-            if key != "->-<-nounlist->-<-":
+            if key not in ["->-<-nounlist->-<-", "->-<-context->-<-"]:
                 output_data[key] = value
         output_data["->-<-nounlist->-<-"] = noun_list
+        output_data["->-<-context->-<-"] = context_dict
         with open(self.target_file, "w", encoding="utf-8") as f:
             json.dump(output_data, f, ensure_ascii=False, indent=2)
         
@@ -125,6 +127,10 @@ class Translator:
             if "->-<-nounlist->-<-" in self.target_json:
                 self.noun_manager.load_from_list(
                     self.target_json["->-<-nounlist->-<-"]
+                )
+            if "->-<-context->-<-" in self.target_json:
+                self.context_manager.load_dict(
+                    self.target_json["->-<-context->-<-"]
                 )
         else:
             self.target_json = {}
