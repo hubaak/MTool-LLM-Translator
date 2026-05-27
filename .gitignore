@@ -1,4 +1,8 @@
+.sessions/
 .claude
+
+ManualTransFile.json
+Translation.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
