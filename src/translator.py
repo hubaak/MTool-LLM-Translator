@@ -6,6 +6,7 @@ from .llm import get_llm_backend
 from .noun_manager import NounManager
 from .source_filter import SourceFilter
 from .context_manager import ContextManager
+from .bracket_hander import BracketHandler
 from .env import LLM_BACKEND, TRANSLATE_CFG, read_prompts
 
 class Translator:
@@ -14,6 +15,7 @@ class Translator:
         self.noun_manager = NounManager()
         self.source_filter = SourceFilter()
         self.context_manager = ContextManager(max_size=TRANSLATE_CFG.get("context_num", 5))
+        self.bracket_hander = BracketHandler() if TRANSLATE_CFG.get("bracket_pre_post_proc", False) else None
         self.max_attempts = TRANSLATE_CFG.get("max_attempts", 3)
         
         if source_file:
@@ -68,6 +70,8 @@ class Translator:
             return {
                 "translation" : [source_text]
             }
+        if self.bracket_hander:
+            source_text, bracket_state = self.bracket_hander.preprocess(source_text)
         for attempt_count in range(self.max_attempts):
             noun_list = self.noun_manager.get_noun_list(source_text)
             context_source_text, context_translation_text = self.context_manager.get_context_formatted()
@@ -78,10 +82,15 @@ class Translator:
             )
             if self.check_translation(results = results):
                 self.register_nouns(results)
+                translation_text = results["translation"][-1] if isinstance(results["translation"], list) else results["translation"]
+                if self.bracket_hander:
+                    source_text = self.bracket_hander.postprocess(source_text, bracket_state)
+                    translation_text = self.bracket_hander.postprocess(translation_text, bracket_state)
                 self.context_manager.add(
                     source_text = source_text.strip(),
-                    translation= results["translation"][-1] if isinstance(results["translation"], list) else results["translation"]
+                    translation= translation_text
                 )
+                results["translation"] = [translation_text]
                 return results
         return {}
     

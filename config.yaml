@@ -11,4 +11,6 @@ OpenAI_api:
 
 Translate_Config:
   max_attempts: 3
-  context_num: 5
+  context_num: 8
+
+  bracket_pre_post_proc: True
