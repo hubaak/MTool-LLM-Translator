@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 import argparse
 import logging
 import asyncio
@@ -15,6 +17,7 @@ from src.translator import Translator
 request_queue = asyncio.Queue()
 translator = None
 worker_task = None
+target_file = None
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,6 +42,7 @@ class TranslationTask:
 
 async def translation_worker():
     global translator
+    
     logger.info("Translation worker started")
 
     while True:
@@ -55,7 +59,8 @@ async def translation_worker():
                 task.source_lang,
                 task.target_lang
             )
-
+            if translator.target_file:
+                translator.save_target_to_json()
             task.future.set_result(result)
 
         except Exception as e:
@@ -73,9 +78,13 @@ async def translation_worker():
 async def lifespan(app: FastAPI):
     global translator
     global worker_task
+    global target_file
 
     logger.info("Loading translator...")
-    translator = Translator()
+    print(target_file)
+    translator = Translator(
+        target_file=target_file
+    )
     logger.info("Translator loaded")
     worker_task = asyncio.create_task(
         translation_worker()
@@ -114,12 +123,32 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Host ip of service")
     parser.add_argument("--port", type=int, default=80, help="Port of the api, default is 80")
+    parser.add_argument(
+        "-s",
+        "--session",
+        type=str,
+        default=None,
+        help="session name"
+    )
     return parser.parse_args()
 
 
+
+args = get_args()    
+if args.session:
+    current_dir = Path(__file__).resolve().parent
+
+    sessions_dir = current_dir / "sessions"
+    sessions_dir.mkdir(exist_ok=True)
+
+    # sessions/<session>.json
+    target_file = (
+        sessions_dir / f"{args.session}.json"
+    ).resolve()
+
+    logger.info(f"Session file: {target_file}")
+
 if __name__ == "__main__":
-    args = get_args()
-    
     uvicorn.run(
         "AutoTranslator_server:app",
         host=args.host,
