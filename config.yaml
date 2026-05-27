@@ -8,3 +8,7 @@ OpenAI_api:
   inference:
     max_tokens: 2048
     temperature: 0.2
+
+Translate_Config:
+  max_attempts: 3
+  context_num: 5

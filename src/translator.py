@@ -6,21 +6,23 @@ from .llm import get_llm_backend
 from .noun_manager import NounManager
 from .source_filter import SourceFilter
 from .context_manager import ContextManager
-from .env import LLM_BACKEND, read_prompts
+from .env import LLM_BACKEND, TRANSLATE_CFG, read_prompts
 
 class Translator:
     def __init__(self, source_file : str = None, target_file : str  = None):
         self.llm = get_llm_backend(LLM_BACKEND)
         self.noun_manager = NounManager()
         self.source_filter = SourceFilter()
-        self.context_manager = ContextManager(max_size=5)
-        self.max_attempts = 3
+        self.context_manager = ContextManager(max_size=TRANSLATE_CFG.get("context_num", 5))
+        self.max_attempts = TRANSLATE_CFG.get("max_attempts", 3)
         
         if source_file:
             self.load_source_from_json(source_file)
         if target_file:
             self.load_target_from_json(target_file)
-            self.target_file = target_file
+        else:
+            self.target_json = {}
+        self.target_file = target_file
             
         self.source_lang = "ja"
         self.target_lang = "zh"

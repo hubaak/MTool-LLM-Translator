@@ -10,6 +10,7 @@ CONFIG_PATH = os.path.join(PROJECT_PATH, "config.yaml")
 with open("config.yaml", "r", encoding="utf-8") as f:
     CONFIG = yaml.safe_load(f)
 LLM_BACKEND = CONFIG.get("LLM_Backend", "openai")
+TRANSLATE_CFG = CONFIG.get("Translate_Config", {})
 
 OPENAI_KEY = os.getenv("MTool_LLMT_OpenAI_KEY", "")
 
